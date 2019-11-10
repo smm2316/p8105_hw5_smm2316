@@ -24,7 +24,7 @@ scale_fill_discrete = scale_fill_viridis_d
 theme_set(theme_bw() + theme(legend.position = "bottom"))
 ```
 
-### Problem 
+### Problem 1
 
 ```{r}
 set.seed(10)
@@ -48,5 +48,31 @@ output = map_dfr(.x = iris_with_missing, ~ clean_iris(.x))
 output %>%
   view()
 ```
+### Problem 2
 
-
+```{r}
+names_df =
+  tibble(
+  subject = list.files(path="./data")
+)
+file_path = "./data/"
+file_names = file_path %>%
+  list.files()
+observations_df =
+  file_names %>%
+  map_dfr(function(file_name){
+ 
+  read_csv(paste0(file_path, file_name))
+})
+study_data = cbind(names_df, observations_df) %>%
+ mutate(subject = str_replace(subject, ".csv", "")) %>%
+ pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    names_prefix = "week_",
+    values_to = "observations")
+study_data %>%
+  ggplot(aes(x = as.numeric(week), y = observations, color = subject)) +
+  geom_line() +
+  labs(title = "Weekly observations by subject", x = "Week", y = "Observation Value") + theme(legend.position="bottom")
+```
