@@ -48,6 +48,7 @@ output = map_dfr(.x = iris_with_missing, ~ clean_iris(.x))
 output %>%
   view()
 ```
+
 ### Problem 2
 
 ```{r}
@@ -74,5 +75,29 @@ study_data = cbind(names_df, observations_df) %>%
 study_data %>%
   ggplot(aes(x = as.numeric(week), y = observations, color = subject)) +
   geom_line() +
-  labs(title = "Weekly observations by subject", x = "Week", y = "Observation Value") + theme(legend.position="bottom")
+  labs(title = "Weekly observations by subject", x = "Week", y = "Observation Value") + theme(legend.position = "bottom")
+```
+
+### Problem 3
+
+```{r}
+sim_regression = function(n = 30, beta0 = 2, beta1 = 0) {
+  
+  sim_data = tibble(
+    x = rnorm(n, mean = 1, sd = 1),
+    y = beta0 + beta1 * x + rnorm(n, 0, 50)
+  )
+  
+  ls_fit = lm(y ~ x, data = sim_data) %>%
+     broom::tidy() %>%
+     select(term, estimate, p.value)
+  
+}
+sim_results = 
+  tibble(beta1 = 0:6) %>% 
+  mutate(
+    output_lists = purrr::map(.x = beta1, ~rerun(10000, sim_regression(beta1 = .x))),
+    estimate_dfs = purrr::map(output_lists, bind_rows)) %>% 
+  select(-output_lists) %>% 
+  unnest(estimate_dfs)
 ```
